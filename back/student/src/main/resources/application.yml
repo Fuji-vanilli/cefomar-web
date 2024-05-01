@@ -2,3 +2,5 @@ spring:
   application:
     name: student-service
 
+server:
+  port: 3100
