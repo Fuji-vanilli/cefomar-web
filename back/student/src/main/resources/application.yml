@@ -2,4 +2,3 @@ spring:
   application:
     name: student-service
 
-
