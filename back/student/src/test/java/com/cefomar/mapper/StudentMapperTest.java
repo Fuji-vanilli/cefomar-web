@@ -1,5 +1,6 @@
 package com.cefomar.mapper;
 
+import com.cefomar.dto.StudentRequest;
 import com.cefomar.dto.StudentResponse;
 import com.cefomar.student.Student;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,7 @@ class StudentMapperTest {
     }
 
     @Test
-    void sure_ThatStudent_IsMap_ToStudentResponse() {
+    void should_student_isMap_toStudentResponse() {
         //GIVEN
         String idStudent= UUID.randomUUID().toString();
         Student student= Student.builder()
@@ -41,5 +42,22 @@ class StudentMapperTest {
         assertThat(student.getFirstname()).isEqualTo(studentResponse.getFirstname());
         assertThat(student.getLastname()).isEqualTo(studentResponse.getLastname());
         assertThat(student.getDateOfBirth()).isEqualTo(studentResponse.getDateOfBirth());
+    }
+
+    @Test
+    void should_studentRequest_isMap_toStudent() {
+        StudentRequest studentRequest= StudentRequest.builder()
+                .firstname("rakoto")
+                .lastname("firinga")
+                .dateOfBirth(new Date())
+                .build();
+
+        //WHEN
+        Student student = studentMapper.mapToStudent(studentRequest);
+
+        //THEN
+        assertThat(studentRequest.getFirstname()).isEqualTo(student.getFirstname());
+        assertThat(studentRequest.getLastname()).isEqualTo(student.getLastname());
+        assertThat(studentRequest.getDateOfBirth()).isEqualTo(student.getDateOfBirth());
     }
 }
