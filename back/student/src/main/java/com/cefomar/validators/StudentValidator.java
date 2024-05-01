@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class StudentValidator {
 
-    public static List<String> validateStudent(StudentRequest request) {
+    public static List<String> validate(StudentRequest request) {
         List<String> errors= new ArrayList<>();
 
         if (Objects.isNull(request.getFirstname())) {
