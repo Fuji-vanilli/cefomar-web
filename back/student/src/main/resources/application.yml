@@ -2,5 +2,5 @@ spring:
   application:
     name: student-service
 
-server:
-  port: 3100
+  config:
+    import: optional:configserver:http://localhost:8000
