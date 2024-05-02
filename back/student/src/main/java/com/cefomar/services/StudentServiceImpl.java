@@ -145,7 +145,17 @@ public class StudentServiceImpl implements StudentService{
 
     @Override
     public Response all() {
-        return null;
+        log.info("all students getted successfully!");
+        return generateResponse(
+                HttpStatus.OK,
+                null,
+                Map.of(
+                        "students", studentRepository.findAll().stream()
+                                .map(studentMapper::mapToStudentResponse)
+                                .toList()
+                ),
+                "all students getted successfully!"
+        );
     }
 
     @Override
