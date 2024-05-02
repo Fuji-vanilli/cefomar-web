@@ -36,6 +36,7 @@ public class StudentServiceImpl implements StudentService{
        if (!errors.isEmpty()) {
             log.info("Sorry, some field is required");
             return generateResponse(
+
                     HttpStatus.BAD_REQUEST,
                     null,
                     Map.of(
