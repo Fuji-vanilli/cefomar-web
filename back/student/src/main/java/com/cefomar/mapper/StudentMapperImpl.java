@@ -22,6 +22,7 @@ public class StudentMapperImpl implements StudentMapper{
     public StudentResponse mapToStudentResponse(Student student) {
         return StudentResponse.builder()
                 .id(student.getId())
+                .matricule(student.getMatricule())
                 .createdDate(student.getCreatedDate())
                 .lastUpdateDate(student.getLastUpdateDate())
                 .firstname(student.getFirstname())
