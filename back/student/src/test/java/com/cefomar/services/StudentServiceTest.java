@@ -167,4 +167,28 @@ public class StudentServiceTest {
         assertThat(HttpStatus.OK).isEqualTo(allStudent.getStatus());
         assertThat("all students getted successfully!").isEqualTo(allStudent.getMessage());
     }
+
+    //DELETE STUDENT TEST
+    @Test
+    void delete_Student_IfNotExist() {
+        when(studentRepository.existsByMatricule(any())).thenReturn(false);
+
+        Response deletedStudent = studentService.delete(any());
+
+        verify(studentRepository, times(1)).existsByMatricule(any());
+        assertThat(HttpStatus.BAD_REQUEST).isEqualTo(deletedStudent.getStatus());
+        assertThat("Sorry, student doesn't exist into the database").isEqualTo(deletedStudent.getMessage());
+    }
+    @Test
+    void delete_StudentExist_AndSuccessfully() {
+        when(studentRepository.existsByMatricule(any())).thenReturn(true);
+
+        Response deletedStudent = studentService.delete(any());
+
+        verify(studentRepository, times(1)).existsByMatricule(any());
+        verify(studentRepository, times(1)).deleteByMatricule(any());
+
+        assertThat(HttpStatus.OK).isEqualTo(deletedStudent.getStatus());
+        assertThat("student deleted successfully").isEqualTo(deletedStudent.getMessage());
+    }
 }

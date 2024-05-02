@@ -160,7 +160,7 @@ public class StudentServiceImpl implements StudentService{
 
     @Override
     public Response delete(String matricule) {
-        if (studentRepository.existsByMatricule(matricule)) {
+        if (!studentRepository.existsByMatricule(matricule)) {
             log.error("Sorry, student doesn't exist into the database");
             return generateResponse(
                     HttpStatus.BAD_REQUEST,
