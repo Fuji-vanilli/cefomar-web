@@ -16,10 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional
@@ -34,9 +31,8 @@ public class StudentServiceImpl implements StudentService{
         String matricule= request.getMatricule();
         List<String> errors= studentValidator.validate(request);
        if (!errors.isEmpty()) {
-            log.info("Sorry, some field is required");
+            log.error("Sorry, some field is required");
             return generateResponse(
-
                     HttpStatus.BAD_REQUEST,
                     null,
                     Map.of(
@@ -48,7 +44,7 @@ public class StudentServiceImpl implements StudentService{
         }
 
         if (studentRepository.existsByMatricule(matricule)) {
-            log.info("student with the matricule: {} already exist", matricule);
+            log.error("student with the matricule: {} already exist", matricule);
             return generateResponse(
                     HttpStatus.BAD_REQUEST,
                     null,
@@ -84,7 +80,40 @@ public class StudentServiceImpl implements StudentService{
 
     @Override
     public Response update(StudentRequest request) {
-        return null;
+        final String matricule= request.getMatricule();
+        if (studentRepository.existsByMatricule(matricule)) {
+            log.info("Sorry, student doesn't exist into the database");
+            return generateResponse(
+
+                    HttpStatus.BAD_REQUEST,
+                    null,
+                    null,
+                    "Sorry, student doesn't exist into the database"
+
+            );
+        }
+
+        Student student = studentRepository.findByMatricule(matricule)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("error to fetch student into the database!")
+                );
+
+        student.setFirstname(request.getFirstname());
+        student.setLastname(request.getLastname());
+        student.setDateOfBirth(request.getDateOfBirth());
+        student.setLastUpdateDate(new Date());
+
+        studentRepository.save(student);
+        log.info("student updated successfully!");
+
+        return generateResponse(
+                HttpStatus.OK,
+                null,
+                Map.of(
+                        "student", studentMapper.mapToStudentResponse(student)
+                ),
+                "student updated successfully!"
+        );
     }
 
     @Override

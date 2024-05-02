@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +50,8 @@ public class StudentServiceTest {
     void tearDown() throws Exception {
         autoCloseable.close();
     }
+
+    // ADD STUDENT TEST
     @Test
     void add_Student_ValidationsFails() {
         StudentRequest studentRequest= new StudentRequest();
@@ -92,5 +95,37 @@ public class StudentServiceTest {
         verify(studentMapper, times(1)).mapToStudentResponse(any(Student.class));
         verify(studentRepository, times(1)).save(any(Student.class));
         assertThat(HttpStatus.OK).isEqualTo(addStudent.getStatus());
+    }
+
+    //UPDATE STUDENT TEST
+    @Test
+    void update_NotExistStudent() {
+        StudentRequest request = new StudentRequest();
+
+        when(studentRepository.existsByMatricule(any())).thenReturn(true);
+
+        Response studentResponse = studentService.update(request);
+
+        verify(studentRepository, times(1)).existsByMatricule(any());
+        assertThat(HttpStatus.BAD_REQUEST).isEqualTo(studentResponse.getStatus());
+        assertThat("Sorry, student doesn't exist into the database").isEqualTo(studentResponse.getMessage());
+    }
+    @Test
+    void updateStudent_Successfully() {
+        StudentRequest request= new StudentRequest();
+
+        when(studentRepository.existsByMatricule(any())).thenReturn(false);
+        when(studentRepository.findByMatricule(any())).thenReturn(Optional.of(new Student()));
+        when(studentMapper.mapToStudentResponse(any(Student.class))).thenReturn(new StudentResponse());
+
+        Response studentUpdate = studentService.update(request);
+
+        verify(studentRepository, times(1)).existsByMatricule(any());
+        verify(studentRepository, times(1)).findByMatricule(any());
+        verify(studentMapper, times(1)).mapToStudentResponse(any(Student.class));
+
+        assertThat(HttpStatus.OK).isEqualTo(studentUpdate.getStatus());
+        assertThat("student updated successfully!").isEqualTo(studentUpdate.getMessage());
+
     }
 }
