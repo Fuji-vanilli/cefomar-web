@@ -152,4 +152,19 @@ public class StudentServiceTest {
         assertThat(HttpStatus.OK).isEqualTo(studentResponse.getStatus());
         assertThat("student getted successfully!").isEqualTo(studentResponse.getMessage());
     }
+
+    //GET ALL STUDENT TEST
+    @Test
+    void get_AllStudent_Successfully() {
+        when(studentRepository.findAll()).thenReturn(List.of(new Student()));
+        when(studentMapper.mapToStudentResponse(any(Student.class))).thenReturn(new StudentResponse());
+
+        Response allStudent = studentService.all();
+
+        verify(studentRepository, times(1)).findAll();
+        verify(studentMapper).mapToStudentResponse(any(Student.class));
+
+        assertThat(HttpStatus.OK).isEqualTo(allStudent.getStatus());
+        assertThat("all students getted successfully!").isEqualTo(allStudent.getMessage());
+    }
 }
