@@ -126,6 +126,30 @@ public class StudentServiceTest {
 
         assertThat(HttpStatus.OK).isEqualTo(studentUpdate.getStatus());
         assertThat("student updated successfully!").isEqualTo(studentUpdate.getMessage());
+    }
 
+    //GET STUDENT TEST
+    @Test
+    void get_Student_IfNotExist() {
+
+        when(studentRepository.findByMatricule(any())).thenReturn(Optional.empty());
+
+        Response studentResponse = studentService.get(any());
+
+        verify(studentRepository, times(1)).findByMatricule(any());
+        assertThat(HttpStatus.BAD_REQUEST).isEqualTo(studentResponse.getStatus());
+        assertThat("Sorry, student doesn't exist into the database").isEqualTo(studentResponse.getMessage());
+    }
+    @Test
+    void get_StudentSuccessfully() {
+
+        when(studentRepository.findByMatricule(any())).thenReturn(Optional.of(new Student()));
+        when(studentMapper.mapToStudentResponse(any(Student.class))).thenReturn(new StudentResponse());
+
+        Response studentResponse = studentService.get(any());
+
+        verify(studentRepository, times(1)).findByMatricule(any());
+        assertThat(HttpStatus.OK).isEqualTo(studentResponse.getStatus());
+        assertThat("student getted successfully!").isEqualTo(studentResponse.getMessage());
     }
 }
