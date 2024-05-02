@@ -16,7 +16,6 @@ import lombok.Setter;
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
 @Builder
-@EqualsAndHashCode
 public class Response {
     private LocalDateTime timeStamp;
     private HttpStatus status;
