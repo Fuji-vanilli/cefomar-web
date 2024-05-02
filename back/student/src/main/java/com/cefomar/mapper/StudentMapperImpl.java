@@ -10,7 +10,7 @@ public class StudentMapperImpl implements StudentMapper{
     @Override
     public Student mapToStudent(StudentRequest request) {
         return Student.builder()
-                .id(request.getId())
+                .matricule(request.getMatricule())
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .dateOfBirth(request.getDateOfBirth())
@@ -22,6 +22,8 @@ public class StudentMapperImpl implements StudentMapper{
     public StudentResponse mapToStudentResponse(Student student) {
         return StudentResponse.builder()
                 .id(student.getId())
+                .createdDate(student.getCreatedDate())
+                .lastUpdateDate(student.getLastUpdateDate())
                 .firstname(student.getFirstname())
                 .lastname(student.getLastname())
                 .dateOfBirth(student.getDateOfBirth())

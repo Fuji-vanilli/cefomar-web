@@ -21,7 +21,7 @@ public class Response {
     private HttpStatus status;
     private int statusCode;
     private Map<?, ?> data;
-    private URI locations;
+    private URI location;
     private String message;
 
 }

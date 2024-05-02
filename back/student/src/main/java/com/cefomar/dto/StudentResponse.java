@@ -9,6 +9,9 @@ import java.util.Date;
 @AllArgsConstructor @NoArgsConstructor
 public class StudentResponse {
     private String id;
+    private String matricule;
+    private Date createdDate;
+    private Date lastUpdateDate;
     private String firstname;
     private String lastname;
     private Date dateOfBirth;

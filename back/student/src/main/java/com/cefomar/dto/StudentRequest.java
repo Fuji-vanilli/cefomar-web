@@ -8,7 +8,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor @NoArgsConstructor
 public class StudentRequest {
-    private String id;
+    private String matricule;
     private String firstname;
     private String lastname;
     private Date dateOfBirth;

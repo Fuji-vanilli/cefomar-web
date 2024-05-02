@@ -13,6 +13,9 @@ import java.util.Date;
 public class Student {
     @Id
     private String id;
+    private String matricule;
+    private Date createdDate;
+    private Date lastUpdateDate;
     private String firstname;
     private String lastname;
     private Date dateOfBirth;
