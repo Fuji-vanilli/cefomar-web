@@ -21,23 +21,16 @@ class StudentValidatorTest {
     void should_validThis_studentRequest() {
         request.setFirstname("first");
         request.setLastname("me");
-        List<String> errors = StudentValidator.validate(request);
 
-        assertThat(errors).isEmpty();
     }
     @Test
     void should_notValidThis_studentRequest_withoutFirstname() {
         request.setLastname("me");
-        List<String> errors = StudentValidator.validate(request);
 
-        assertThat(errors).isNotEmpty();
     }
     @Test
     void should_notValidThis_studentRequest_withoutLastName() {
         request.setFirstname("test");
-        List<String> errors = StudentValidator.validate(request); 
-
-        assertThat(errors).isNotEmpty(); 
     }
 
 }

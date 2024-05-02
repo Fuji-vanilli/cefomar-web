@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -27,11 +28,12 @@ import java.util.UUID;
 public class StudentServiceImpl implements StudentService{
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
+    private final StudentValidator studentValidator;
     @Override
     public Response add(StudentRequest request) {
         String matricule= request.getMatricule();
-        List<String> errors= StudentValidator.validate(request);
-        if (!errors.isEmpty()) {
+        List<String> errors= studentValidator.validate(request);
+       if (!errors.isEmpty()) {
             log.info("Sorry, some field is required");
             return generateResponse(
                     HttpStatus.BAD_REQUEST,
@@ -62,14 +64,16 @@ public class StudentServiceImpl implements StudentService{
         studentRepository.save(student);
         log.info("new student added successfully!");
 
-        URI location= ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("{matricule}")
-                .buildAndExpand("api/student/get/"+matricule)
-                .toUri();
+        URI location;
+        try {
+            location= new URI("api/student/get/"+matricule);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
 
         return generateResponse(
                 HttpStatus.OK,
-                location,
+                null,
                 Map.of(
                         "student", studentMapper.mapToStudentResponse(student)
                 ),
