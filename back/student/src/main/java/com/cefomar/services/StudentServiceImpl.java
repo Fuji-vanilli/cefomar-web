@@ -81,10 +81,9 @@ public class StudentServiceImpl implements StudentService{
     @Override
     public Response update(StudentRequest request) {
         final String matricule= request.getMatricule();
-        if (studentRepository.existsByMatricule(matricule)) {
-            log.info("Sorry, student doesn't exist into the database");
+        if (!studentRepository.existsByMatricule(matricule)) {
+            log.error("Sorry, student doesn't exist into the database");
             return generateResponse(
-
                     HttpStatus.BAD_REQUEST,
                     null,
                     null,
@@ -117,8 +116,31 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public Response get(String id) {
-        return null;
+    public Response get(String matricule) {
+        Optional<Student> studentOptional= studentRepository.findByMatricule(matricule);
+        if (studentOptional.isEmpty()) {
+            log.error("Sorry, student doesn't exist into the database");
+            return generateResponse(
+
+                    HttpStatus.BAD_REQUEST,
+                    null,
+                    null,
+                    "Sorry, student doesn't exist into the database"
+
+            );
+        }
+
+        Student student= studentOptional.get();
+        log.info("student getted successfully!");
+
+        return generateResponse(
+                HttpStatus.OK,
+                null,
+                Map.of(
+                        "student", studentMapper.mapToStudentResponse(student)
+                ),
+                "student getted successfully!"
+        );
     }
 
     @Override

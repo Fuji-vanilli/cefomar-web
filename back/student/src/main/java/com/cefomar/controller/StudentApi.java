@@ -26,8 +26,8 @@ public class StudentApi implements StudentController {
     }
 
     @Override
-    public ResponseEntity<Response> get(String id) {
-        return ResponseEntity.ok(studentService.get(id));
+    public ResponseEntity<Response> get(String matricule) {
+        return ResponseEntity.ok(studentService.get(matricule));
     }
 
     @Override

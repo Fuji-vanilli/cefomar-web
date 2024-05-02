@@ -102,7 +102,7 @@ public class StudentServiceTest {
     void update_NotExistStudent() {
         StudentRequest request = new StudentRequest();
 
-        when(studentRepository.existsByMatricule(any())).thenReturn(true);
+        when(studentRepository.existsByMatricule(any())).thenReturn(false);
 
         Response studentResponse = studentService.update(request);
 
@@ -114,7 +114,7 @@ public class StudentServiceTest {
     void updateStudent_Successfully() {
         StudentRequest request= new StudentRequest();
 
-        when(studentRepository.existsByMatricule(any())).thenReturn(false);
+        when(studentRepository.existsByMatricule(any())).thenReturn(true);
         when(studentRepository.findByMatricule(any())).thenReturn(Optional.of(new Student()));
         when(studentMapper.mapToStudentResponse(any(Student.class))).thenReturn(new StudentResponse());
 
