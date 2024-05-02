@@ -15,5 +15,5 @@ public interface StudentController {
     @GetMapping("all")
     ResponseEntity<Response> all();
     @DeleteMapping("delete/{id}")
-    ResponseEntity<Response> delete(@PathVariable String id);
+    ResponseEntity<Response> delete(@PathVariable String matricule);
 }

@@ -36,7 +36,7 @@ public class StudentApi implements StudentController {
     }
 
     @Override
-    public ResponseEntity<Response> delete(String id) {
-        return ResponseEntity.ok(studentService.delete(id));
+    public ResponseEntity<Response> delete(String matricule) {
+        return ResponseEntity.ok(studentService.delete(matricule));
     }
 }

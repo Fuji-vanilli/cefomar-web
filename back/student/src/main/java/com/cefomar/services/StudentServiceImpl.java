@@ -159,8 +159,26 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public Response delete(String id) {
-        return null;
+    public Response delete(String matricule) {
+        if (studentRepository.existsByMatricule(matricule)) {
+            log.error("Sorry, student doesn't exist into the database");
+            return generateResponse(
+                    HttpStatus.BAD_REQUEST,
+                    null,
+                    null,
+                    "Sorry, student doesn't exist into the database"
+            );
+        }
+
+        studentRepository.deleteByMatricule(matricule);
+        log.info("student deleted successfully");
+
+        return generateResponse(
+                HttpStatus.OK,
+                null,
+                null,
+                "student deleted successfully"
+        );
     }
     private Response generateResponse(HttpStatus status, URI location, Map<?, ?> data, String message) {
         return Response.builder()

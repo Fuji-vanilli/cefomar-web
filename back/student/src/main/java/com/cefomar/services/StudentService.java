@@ -8,5 +8,5 @@ public interface StudentService {
     Response update(StudentRequest request);
     Response get(String matricule);
     Response all();
-    Response delete(String id);
+    Response delete(String matricule);
 }
