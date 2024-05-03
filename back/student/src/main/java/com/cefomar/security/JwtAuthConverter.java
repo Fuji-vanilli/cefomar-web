@@ -4,6 +4,7 @@ import com.nimbusds.jwt.JWTClaimNames;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -19,12 +20,12 @@ import java.util.stream.Stream;
 
 @Configuration
 @RequiredArgsConstructor
-public class JwtAuthConverter implements Converter<Jwt, JwtAuthenticationToken> {
+public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter;
     private final JwtConverterProperties properties;
 
     @Override
-    public JwtAuthenticationToken convert(Jwt jwt) {
+    public AbstractAuthenticationToken convert(Jwt jwt) {
         Collection<? extends GrantedAuthority> authorities= Stream.concat(
                 extractRoles(jwt).stream(),
                 jwtGrantedAuthoritiesConverter.convert(jwt).stream()
@@ -39,16 +40,16 @@ public class JwtAuthConverter implements Converter<Jwt, JwtAuthenticationToken> 
             claimName= properties.getPrincipalAttribute();
         }
 
-        return claimName;
+        return jwt.getClaim(claimName);
     }
     public Collection<? extends GrantedAuthority> extractRoles(Jwt jwt) {
         Map<String, Object> resourcesAccess= jwt.getClaim("resource_access");
         Map<String, Object> resources;
         Collection<String> resourcesRoles;
 
-        if (Objects.isNull(resourcesAccess) ||
-            Objects.isNull((resources= (Map<String, Object>) resourcesAccess.get(properties.getResourceId()))) ||
-            Objects.isNull(resourcesRoles= (Collection<String>) resources.get("roles"))) {
+        if (Objects.isNull(resourcesAccess)
+                || Objects.isNull((resources= (Map<String, Object>) resourcesAccess.get(properties.getResourceId())))
+                || Objects.isNull(resourcesRoles= (Collection<String>) resources.get("roles"))) {
 
             return Set.of();
         }
