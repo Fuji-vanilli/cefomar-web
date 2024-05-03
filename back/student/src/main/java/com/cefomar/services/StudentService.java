@@ -6,7 +6,7 @@ import com.cefomar.utils.Response;
 public interface StudentService {
     Response add(StudentRequest request);
     Response update(StudentRequest request);
-    Response get(String matricule);
+    Response get(String code);
     Response all();
-    Response delete(String matricule);
+    Response delete(String code);
 }

@@ -26,8 +26,8 @@ public class StudentApi implements StudentController {
     }
 
     @Override
-    public ResponseEntity<Response> get(String matricule) {
-        return ResponseEntity.ok(studentService.get(matricule));
+    public ResponseEntity<Response> get(String code) {
+        return ResponseEntity.ok(studentService.get(code));
     }
 
     @Override
@@ -36,7 +36,7 @@ public class StudentApi implements StudentController {
     }
 
     @Override
-    public ResponseEntity<Response> delete(String matricule) {
-        return ResponseEntity.ok(studentService.delete(matricule));
+    public ResponseEntity<Response> delete(String code) {
+        return ResponseEntity.ok(studentService.delete(code));
     }
 }

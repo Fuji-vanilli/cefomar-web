@@ -9,7 +9,7 @@ import java.util.Date;
 @AllArgsConstructor @NoArgsConstructor
 public class StudentResponse {
     private String id;
-    private String matricule;
+    private String code;
     private Date createdDate;
     private Date lastUpdateDate;
     private String firstname;

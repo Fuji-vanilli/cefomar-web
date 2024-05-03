@@ -1,6 +1,7 @@
 package com.cefomar.services;
 
 import com.cefomar.dto.StudentRequest;
+import com.cefomar.dto.StudentResponse;
 import com.cefomar.mapper.StudentMapper;
 import com.cefomar.repository.StudentRepository;
 import com.cefomar.student.Student;
@@ -11,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,28 +28,29 @@ public class StudentServiceImpl implements StudentService{
     private final StudentValidator studentValidator;
     @Override
     public Response add(StudentRequest request) {
-        String matricule= request.getMatricule();
+        final String codeStudent= request.getCode();
         List<String> errors= studentValidator.validate(request);
-       if (!errors.isEmpty()) {
-            log.error("Sorry, some field is required");
+
+        if (!errors.isEmpty()) {
+            log.error("validations error: {}", errors);
             return generateResponse(
                     HttpStatus.BAD_REQUEST,
                     null,
                     Map.of(
                             "errors", errors
                     ),
-                    "some field is required!"
-
+                    "some fields are required!"
             );
         }
 
-        if (studentRepository.existsByMatricule(matricule)) {
-            log.error("student with the matricule: {} already exist", matricule);
+        Optional<Student> existingStudent = studentRepository.findByCode(codeStudent);
+        if (existingStudent.isPresent()) {
+            log.error("student with the code: {} already exist", codeStudent);
             return generateResponse(
                     HttpStatus.BAD_REQUEST,
                     null,
                     null,
-                    "student with the matricule: "+matricule+" already exist into the database"
+                    "student with the code: "+ codeStudent +" already exist into the database"
             );
         }
 
@@ -63,13 +64,14 @@ public class StudentServiceImpl implements StudentService{
 
         URI location;
         try {
-            location= new URI("api/student/get/"+matricule);
+            location= new URI("api/student/get/"+ codeStudent);
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            log.error("failed to create URI for a new student ", e);
+            throw new RuntimeException("failed to create URI for a new student ", e);
         }
 
         return generateResponse(
-                HttpStatus.OK,
+                HttpStatus.CREATED,
                 null,
                 Map.of(
                         "student", studentMapper.mapToStudentResponse(student)
@@ -80,8 +82,10 @@ public class StudentServiceImpl implements StudentService{
 
     @Override
     public Response update(StudentRequest request) {
-        final String matricule= request.getMatricule();
-        if (!studentRepository.existsByMatricule(matricule)) {
+        final String codeStudent= request.getCode();
+        Optional<Student> existingStudent = studentRepository.findByCode(codeStudent);
+
+        if (existingStudent.isEmpty()) {
             log.error("Sorry, student doesn't exist into the database");
             return generateResponse(
                     HttpStatus.BAD_REQUEST,
@@ -92,10 +96,7 @@ public class StudentServiceImpl implements StudentService{
             );
         }
 
-        Student student = studentRepository.findByMatricule(matricule)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("error to fetch student into the database!")
-                );
+        Student student = existingStudent.get();
 
         student.setFirstname(request.getFirstname());
         student.setLastname(request.getLastname());
@@ -116,12 +117,11 @@ public class StudentServiceImpl implements StudentService{
     }
 
     @Override
-    public Response get(String matricule) {
-        Optional<Student> studentOptional= studentRepository.findByMatricule(matricule);
-        if (studentOptional.isEmpty()) {
+    public Response get(String code) {
+        Optional<Student> existingStudent= studentRepository.findByCode(code);
+        if (existingStudent.isEmpty()) {
             log.error("Sorry, student doesn't exist into the database");
             return generateResponse(
-
                     HttpStatus.BAD_REQUEST,
                     null,
                     null,
@@ -130,8 +130,8 @@ public class StudentServiceImpl implements StudentService{
             );
         }
 
-        Student student= studentOptional.get();
-        log.info("student getted successfully!");
+        Student student= existingStudent.get();
+        log.info("student retrieved successfully!");
 
         return generateResponse(
                 HttpStatus.OK,
@@ -139,28 +139,42 @@ public class StudentServiceImpl implements StudentService{
                 Map.of(
                         "student", studentMapper.mapToStudentResponse(student)
                 ),
-                "student getted successfully!"
+                "student retrieved successfully!"
         );
     }
 
     @Override
     public Response all() {
-        log.info("all students getted successfully!");
-        return generateResponse(
-                HttpStatus.OK,
-                null,
-                Map.of(
-                        "students", studentRepository.findAll().stream()
-                                .map(studentMapper::mapToStudentResponse)
-                                .toList()
-                ),
-                "all students getted successfully!"
-        );
+        try {
+            List<StudentResponse> studentResponses = studentRepository.findAll().stream()
+                    .map(studentMapper::mapToStudentResponse)
+                    .toList();
+
+            log.info("all students retrieved successfully!");
+            return generateResponse(
+                    HttpStatus.OK,
+                    null,
+                    Map.of(
+                            "students", studentResponses
+                    ),
+                    "all students retrieved successfully!"
+            );
+        } catch (Exception e) {
+            log.error("error to retrieved all student ", e);
+            return generateResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null,
+                    null,
+                    "failed to retrieved all student"
+            );
+        }
+
     }
 
     @Override
-    public Response delete(String matricule) {
-        if (!studentRepository.existsByMatricule(matricule)) {
+    public Response delete(String code) {
+        Optional<Student> existingStudent= studentRepository.findByCode(code);
+        if (existingStudent.isEmpty()) {
             log.error("Sorry, student doesn't exist into the database");
             return generateResponse(
                     HttpStatus.BAD_REQUEST,
@@ -170,15 +184,25 @@ public class StudentServiceImpl implements StudentService{
             );
         }
 
-        studentRepository.deleteByMatricule(matricule);
-        log.info("student deleted successfully");
+        try {
+            studentRepository.deleteByCode(code);
+            log.info("student deleted successfully");
 
-        return generateResponse(
-                HttpStatus.OK,
-                null,
-                null,
-                "student deleted successfully"
-        );
+            return generateResponse(
+                    HttpStatus.OK,
+                    null,
+                    null,
+                    "student deleted successfully"
+            );
+        } catch (Exception e) {
+            log.error("error occurred while deleting student!");
+            return generateResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    null,
+                    null,
+                    "error occurred while deleting student"
+            );
+        }
     }
     private Response generateResponse(HttpStatus status, URI location, Map<?, ?> data, String message) {
         return Response.builder()

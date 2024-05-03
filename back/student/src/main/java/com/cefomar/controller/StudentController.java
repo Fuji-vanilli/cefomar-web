@@ -10,10 +10,10 @@ public interface StudentController {
     ResponseEntity<Response> add(@RequestBody StudentRequest request);
     @PutMapping("update")
     ResponseEntity<Response> update(@RequestBody StudentRequest request);
-    @GetMapping("get/{matricule}")
-    ResponseEntity<Response> get(@PathVariable String matricule);
+    @GetMapping("get/{code}")
+    ResponseEntity<Response> get(@PathVariable String code);
     @GetMapping("all")
     ResponseEntity<Response> all();
-    @DeleteMapping("delete/{matricule}")
-    ResponseEntity<Response> delete(@PathVariable String matricule);
+    @DeleteMapping("delete/{code}")
+    ResponseEntity<Response> delete(@PathVariable String code);
 }

@@ -18,6 +18,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import javax.swing.text.html.Option;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +63,7 @@ public class StudentServiceTest {
 
         verify(studentValidator, times(1)).validate(any(StudentRequest.class));
         assertThat(HttpStatus.BAD_REQUEST).isEqualTo(studentResponse.getStatus());
-        assertThat("some field is required!").isEqualTo(studentResponse.getMessage());
+        assertThat("some fields are required!").isEqualTo(studentResponse.getMessage());
     }
 
     @Test
@@ -70,20 +71,20 @@ public class StudentServiceTest {
         StudentRequest studentRequest= new StudentRequest();
 
         when(studentValidator.validate(any(StudentRequest.class))).thenReturn(List.of());
-        when(studentRepository.existsByMatricule(any())).thenReturn(true);
+        when(studentRepository.findByCode(any())).thenReturn(Optional.of(new Student()));
 
         Response studentResponse = studentService.add(studentRequest);
 
-        verify(studentRepository, times(1)).existsByMatricule(any());
+        verify(studentRepository, times(1)).findByCode(any());
         assertThat(HttpStatus.BAD_REQUEST).isEqualTo(studentResponse.getStatus());
-        assertThat(studentResponse.getMessage()).contains("student with the matricule:");
+        assertThat(studentResponse.getMessage()).contains("student with the code:");
     }
     @Test
     void add_NewStudent_Successfully() {
         StudentRequest request = new StudentRequest();
 
         when(studentValidator.validate(any(StudentRequest.class))).thenReturn(List.of());
-        when(studentRepository.existsByMatricule(any())).thenReturn(false);
+        when(studentRepository.findByCode(any())).thenReturn(Optional.empty());
         when(studentMapper.mapToStudent(any(StudentRequest.class))).thenReturn(new Student());
         when(studentRepository.save(any(Student.class))).thenReturn(new Student());
         when(studentMapper.mapToStudentResponse(any(Student.class))).thenReturn(new StudentResponse());
@@ -94,7 +95,8 @@ public class StudentServiceTest {
         verify(studentMapper, times(1)).mapToStudent(any(StudentRequest.class));
         verify(studentMapper, times(1)).mapToStudentResponse(any(Student.class));
         verify(studentRepository, times(1)).save(any(Student.class));
-        assertThat(HttpStatus.OK).isEqualTo(addStudent.getStatus());
+        assertThat(HttpStatus.CREATED).isEqualTo(addStudent.getStatus());
+        assertThat("new student added successfully!").isEqualTo(addStudent.getMessage());
     }
 
     //UPDATE STUDENT TEST
@@ -102,11 +104,11 @@ public class StudentServiceTest {
     void update_NotExistStudent() {
         StudentRequest request = new StudentRequest();
 
-        when(studentRepository.existsByMatricule(any())).thenReturn(false);
+        when(studentRepository.findByCode(any())).thenReturn(Optional.empty());
 
         Response studentResponse = studentService.update(request);
 
-        verify(studentRepository, times(1)).existsByMatricule(any());
+        verify(studentRepository, times(1)).findByCode(any());
         assertThat(HttpStatus.BAD_REQUEST).isEqualTo(studentResponse.getStatus());
         assertThat("Sorry, student doesn't exist into the database").isEqualTo(studentResponse.getMessage());
     }
@@ -114,14 +116,12 @@ public class StudentServiceTest {
     void updateStudent_Successfully() {
         StudentRequest request= new StudentRequest();
 
-        when(studentRepository.existsByMatricule(any())).thenReturn(true);
-        when(studentRepository.findByMatricule(any())).thenReturn(Optional.of(new Student()));
+        when(studentRepository.findByCode(any())).thenReturn(Optional.of(new Student()));
         when(studentMapper.mapToStudentResponse(any(Student.class))).thenReturn(new StudentResponse());
 
         Response studentUpdate = studentService.update(request);
 
-        verify(studentRepository, times(1)).existsByMatricule(any());
-        verify(studentRepository, times(1)).findByMatricule(any());
+        verify(studentRepository, times(1)).findByCode(any());
         verify(studentMapper, times(1)).mapToStudentResponse(any(Student.class));
 
         assertThat(HttpStatus.OK).isEqualTo(studentUpdate.getStatus());
@@ -132,25 +132,25 @@ public class StudentServiceTest {
     @Test
     void get_Student_IfNotExist() {
 
-        when(studentRepository.findByMatricule(any())).thenReturn(Optional.empty());
+        when(studentRepository.findByCode(any())).thenReturn(Optional.empty());
 
         Response studentResponse = studentService.get(any());
 
-        verify(studentRepository, times(1)).findByMatricule(any());
+        verify(studentRepository, times(1)).findByCode(any());
         assertThat(HttpStatus.BAD_REQUEST).isEqualTo(studentResponse.getStatus());
         assertThat("Sorry, student doesn't exist into the database").isEqualTo(studentResponse.getMessage());
     }
     @Test
     void get_StudentSuccessfully() {
 
-        when(studentRepository.findByMatricule(any())).thenReturn(Optional.of(new Student()));
+        when(studentRepository.findByCode(any())).thenReturn(Optional.of(new Student()));
         when(studentMapper.mapToStudentResponse(any(Student.class))).thenReturn(new StudentResponse());
 
         Response studentResponse = studentService.get(any());
 
-        verify(studentRepository, times(1)).findByMatricule(any());
+        verify(studentRepository, times(1)).findByCode(any());
         assertThat(HttpStatus.OK).isEqualTo(studentResponse.getStatus());
-        assertThat("student getted successfully!").isEqualTo(studentResponse.getMessage());
+        assertThat("student retrieved successfully!").isEqualTo(studentResponse.getMessage());
     }
 
     //GET ALL STUDENT TEST
@@ -165,28 +165,28 @@ public class StudentServiceTest {
         verify(studentMapper).mapToStudentResponse(any(Student.class));
 
         assertThat(HttpStatus.OK).isEqualTo(allStudent.getStatus());
-        assertThat("all students getted successfully!").isEqualTo(allStudent.getMessage());
+        assertThat("all students retrieved successfully!").isEqualTo(allStudent.getMessage());
     }
 
     //DELETE STUDENT TEST
     @Test
     void delete_Student_IfNotExist() {
-        when(studentRepository.existsByMatricule(any())).thenReturn(false);
+        when(studentRepository.findByCode(any())).thenReturn(Optional.empty());
 
         Response deletedStudent = studentService.delete(any());
 
-        verify(studentRepository, times(1)).existsByMatricule(any());
+        verify(studentRepository, times(1)).findByCode(any());
         assertThat(HttpStatus.BAD_REQUEST).isEqualTo(deletedStudent.getStatus());
         assertThat("Sorry, student doesn't exist into the database").isEqualTo(deletedStudent.getMessage());
     }
     @Test
     void delete_StudentExist_AndSuccessfully() {
-        when(studentRepository.existsByMatricule(any())).thenReturn(true);
+        when(studentRepository.findByCode(any())).thenReturn(Optional.of(new Student()));
 
         Response deletedStudent = studentService.delete(any());
 
-        verify(studentRepository, times(1)).existsByMatricule(any());
-        verify(studentRepository, times(1)).deleteByMatricule(any());
+        verify(studentRepository, times(1)).findByCode(any());
+        verify(studentRepository, times(1)).deleteByCode(any());
 
         assertThat(HttpStatus.OK).isEqualTo(deletedStudent.getStatus());
         assertThat("student deleted successfully").isEqualTo(deletedStudent.getMessage());
