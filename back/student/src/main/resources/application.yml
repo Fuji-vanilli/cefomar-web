@@ -3,4 +3,4 @@ spring:
     name: student-service
 
   config:
-    import: optional:configserver:http://localhost:4000
+    import: optional:configserver:${CONFIG-SERVER-URL:http://localhost:4000}
