@@ -29,7 +29,7 @@ services:
       - KC_DB_USERNAME=ixml
       - KC_DB_PASSWORD=1234
     depends_on:
-      mysql:
+      mysql-keycloak:
         condition: service_started
     volumes:
       - cef_keycloak_data:/opt/standalone/keycloak/data
