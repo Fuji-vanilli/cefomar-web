@@ -1,0 +1,131 @@
+version: "3.8"
+
+services:
+  mysql-keycloak:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=root1234!
+      - MYSQL_USER=ixml
+      - MYSQL_PASSWORD=1234
+      - MYSQL_DATABASE=kc-db
+    ports:
+      - '3306:3306'
+    volumes:
+      - cef_mysql_keycloak:/var/lib/mysql
+    networks:
+      - cefomar-network
+
+  keycloak-service:
+    image: quay.io/keycloak/keycloak:latest
+    command:
+      - start-dev
+    ports:
+      - '8080:8080'
+    environment:
+      - KEYCLOAK_ADMIN_PASSWORD=12345
+      - KEYCLOAK_ADMIN=ixml
+      - KC_DB=mysql
+      - KC_DB_URL=jdbc:mysql://mysql-keycloak:3306/kc-db
+      - KC_DB_USERNAME=ixml
+      - KC_DB_PASSWORD=1234
+    depends_on:
+      mysql:
+        condition: service_started
+    volumes:
+      - cef_keycloak_data:/opt/standalone/keycloak/data
+    networks:
+        - cefomar-network
+
+  mysql-student:
+    image: mysql:latest
+    container_name: mysql-student
+    ports:
+      - '3307:3306'
+    networks:
+      - cefomar-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=root1234!
+      - MYSQL_USER=ixml
+      - MYSQL_PASSWORD=1234
+      - MYSQL_DATABASE=student-db
+    volumes:
+      - cef_student_data:/var/lib/mysql
+
+  cefomar-discovery-service:
+    build: ./discover-service
+    container_name: discovery-service
+    ports:
+      - '8761:8761'
+    expose:
+      - '8761'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 50s
+      retries: 4
+    networks:
+      - cefomar-network
+
+  cefomar-config-server:
+    build: ./config-server
+    container_name: config-server
+    ports:
+      - '4000:4000'
+    expose:
+      - '4000'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/actuator/health"]
+      interval: 50s
+      retries: 10
+    depends_on:
+      cefomar-discovery-service:
+        condition: service_healthy
+    environment:
+      - DISCOVERY-SERVICE-URL=http://cefomar-discovery-service:8761/eureka
+    networks:
+      - cefomar-network
+
+  cefomar-gateway-service:
+    build: ./gateway-service
+    container_name: gateway-service
+    ports:
+      - '7000:7000'
+    expose:
+      - '7000'
+    depends_on:
+      cefomar-config-server:
+        condition: service_healthy
+    environment:
+      - DISCOVERY-SERVICE-URL=http://cefomar-discovery-service:8761/eureka
+      - CONFIG-SERVER-URL=http://cefomar-config-server:4000
+    networks:
+      - cefomar-network
+
+  cefomar-student-service:
+    build: ./student
+    container_name: student-service
+    ports:
+      - '8000:8000'
+    expose:
+      - '8000'
+    depends_on:
+      cefomar-config-server:
+        condition: service_healthy
+
+    environment:
+      - DISCOVERY-SERVICE-URL=http://cefomar-discovery-service:8761/eureka
+      - CONFIG-SERVER-URL=http://cefomar-config-server:4000
+      - MYSQL_URL=jdbc:mysql://mysql-student:3306/student-db
+      - MYSQL_USERNAME=ixml
+      - MYSQL_PASSWORD=1234
+      - KEYCLOAK_ISSUER_URI=http://keycloak-service:8080/realms/cefomar-digital
+    networks:
+      - cefomar-network
+
+networks:
+  cefomar-network:
+    driver: bridge
+
+volumes:
+  cef_student_data:
+  cef_mysql_keycloak:
+  cef_keycloak_data:
