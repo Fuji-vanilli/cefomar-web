@@ -4,3 +4,10 @@ spring:
 
   config:
     import: optional:configserver:${CONFIG-SERVER-URL:http://localhost:4000}
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        includes: "*"
